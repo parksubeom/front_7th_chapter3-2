@@ -10,7 +10,7 @@ interface Props {
   onDeleteProduct: (id: string) => void;
   onAddCoupon: (coupon: Coupon) => void;
   onDeleteCoupon: (id: string) => void;
-  // ✅ 알림 기능 주입 추가
+  //  알림 기능 주입 추가
   onNotification: (message: string, type?: "error" | "success" | "warning") => void;
 }
 
@@ -22,7 +22,7 @@ export const AdminDashboard = ({
   onDeleteProduct,
   onAddCoupon,
   onDeleteCoupon,
-  onNotification, // ✅ Props로 받기
+  onNotification, //  Props로 받기
 }: Props) => {
   const [activeTab, setActiveTab] = useState<"products" | "coupons">("products");
   const [showProductForm, setShowProductForm] = useState(false);
@@ -271,7 +271,7 @@ export const AdminDashboard = ({
                         if (value === "") {
                           setProductForm({ ...productForm, price: 0 });
                         } else if (parseInt(value) < 0) {
-                          // ✅ alert 대신 onNotification 사용
+                          //  alert 대신 onNotification 사용
                           onNotification("가격은 0보다 커야 합니다", "error");
                           setProductForm({ ...productForm, price: 0 });
                         }
@@ -302,7 +302,7 @@ export const AdminDashboard = ({
                         if (value === "") {
                           setProductForm({ ...productForm, stock: 0 });
                         } else if (parseInt(value) < 0) {
-                          // ✅ alert 대신 onNotification 사용
+                          //  alert 대신 onNotification 사용
                           onNotification("재고는 0보다 커야 합니다", "error");
                           setProductForm({ ...productForm, stock: 0 });
                         } else if (parseInt(value) > 9999) {
@@ -590,7 +590,7 @@ export const AdminDashboard = ({
                           const value = parseInt(e.target.value) || 0;
                           if (couponForm.discountType === "percentage") {
                             if (value > 100) {
-                              // ✅ alert 대신 onNotification 사용 (테스트 통과 핵심)
+                              //  alert 대신 onNotification 사용 (테스트 통과 핵심)
                               onNotification("할인율은 100%를 초과할 수 없습니다", "error");
                               setCouponForm({
                                 ...couponForm,
@@ -604,7 +604,7 @@ export const AdminDashboard = ({
                             }
                           } else {
                             if (value > 100000) {
-                              // ✅ alert 대신 onNotification 사용
+                              //  alert 대신 onNotification 사용
                               onNotification("할인 금액은 100,000원을 초과할 수 없습니다", "error");
                               setCouponForm({
                                 ...couponForm,

@@ -18,7 +18,7 @@ export const Header = ({
   searchTerm,
   onSearchChange,
 }: Props) => {
-  // ✅ UI 로직: 장바구니 총 수량 계산
+  //  UI 로직: 장바구니 총 수량 계산
   // (이 로직은 '장바구니' 도메인에 가깝지만, 배지 표시용 UI 로직이므로 여기서 계산해도 무방합니다.)
   // 추후 features/cart/lib 등으로 이동할 수도 있습니다.
   const totalItemCount = cart.reduce((acc, item) => acc + item.quantity, 0);
