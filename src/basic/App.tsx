@@ -11,6 +11,7 @@ import { AdminDashboard } from "./widgets/AdminDashboard/ui";
 import { useProducts } from "./features/product/model/useProducts";
 import { useCoupons } from "./features/coupon/model/useCoupons";
 import { useCart } from "./features/cart/model/useCart";
+import { useDebounce } from "./shared/lib/useDebounce";
 
 const App = () => {
   // 1. Shared Logic: 알림 시스템
@@ -30,18 +31,10 @@ const App = () => {
   );
 
   // 2. Feature Hooks: 도메인 로직 주입
-  const { 
-    products, 
-    addProduct, 
-    updateProduct, 
-    deleteProduct 
-  } = useProducts(addNotification);
+  const { products, addProduct, updateProduct, deleteProduct } =
+    useProducts(addNotification);
 
-  const { 
-    coupons, 
-    addCoupon, 
-    deleteCoupon 
-  } = useCoupons(addNotification);
+  const { coupons, addCoupon, deleteCoupon } = useCoupons(addNotification);
 
   const {
     cart,
@@ -57,16 +50,8 @@ const App = () => {
   // 3. UI State: 화면 제어
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
-  // 검색 디바운스 (테스트 통과를 위해 타이밍 유지)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
   // 검색 필터링 로직
   const filteredProducts = debouncedSearchTerm
     ? products.filter(

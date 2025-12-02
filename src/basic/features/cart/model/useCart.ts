@@ -1,15 +1,16 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { CartItem, ProductWithUI, Coupon } from "../../../shared/model/types";
 import { getRemainingStock } from "../../../entities/product/lib";
 import { calculateCartTotal } from "../../../entities/cart/lib";
 import { useLocalStorage } from "../../../shared/lib/useLocalStorage";
+import { canApplyCoupon } from "../../../entities/coupon/lib";
 
 export const useCart = (
   products: ProductWithUI[],
   addNotification: (msg: string, type?: "error" | "success" | "warning") => void
 ) => {
-    const [cart, setCart] = useLocalStorage<CartItem[]>("cart", []);
-    const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
+  const [cart, setCart] = useLocalStorage<CartItem[]>("cart", []);
+  const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
 
   const addToCart = useCallback(
     (product: ProductWithUI) => {
@@ -23,7 +24,10 @@ export const useCart = (
         const existing = prev.find((item) => item.product.id === product.id);
         if (existing) {
           if (existing.quantity + 1 > product.stock) {
-            addNotification(`재고는 ${product.stock}개까지만 있습니다.`, "error");
+            addNotification(
+              `재고는 ${product.stock}개까지만 있습니다.`,
+              "error"
+            );
             return prev;
           }
           return prev.map((item) =>
@@ -61,7 +65,9 @@ export const useCart = (
 
       setCart((prev) =>
         prev.map((item) =>
-          item.product.id === productId ? { ...item, quantity: newQuantity } : item
+          item.product.id === productId
+            ? { ...item, quantity: newQuantity }
+            : item
         )
       );
     },
@@ -71,13 +77,14 @@ export const useCart = (
   const applyCoupon = useCallback(
     (coupon: Coupon) => {
       const { totalAfterDiscount } = calculateCartTotal(cart, null);
-      if (totalAfterDiscount < 10000 && coupon.discountType === "percentage") {
+      if (!canApplyCoupon(coupon, totalAfterDiscount)) {
         addNotification(
           "percentage 쿠폰은 10,000원 이상 구매 시 사용 가능합니다.",
           "error"
         );
         return;
       }
+
       setSelectedCoupon(coupon);
       addNotification("쿠폰이 적용되었습니다.", "success");
     },
@@ -86,7 +93,10 @@ export const useCart = (
 
   const completeOrder = useCallback(() => {
     const orderNumber = `ORD-${Date.now()}`;
-    addNotification(`주문이 완료되었습니다. 주문번호: ${orderNumber}`, "success");
+    addNotification(
+      `주문이 완료되었습니다. 주문번호: ${orderNumber}`,
+      "success"
+    );
     setCart([]);
     setSelectedCoupon(null);
   }, [addNotification]);
