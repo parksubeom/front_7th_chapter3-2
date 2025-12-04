@@ -1,53 +1,17 @@
-import { useCallback } from "react";
-import { ProductWithUI } from "../../../entities/product/model/types";
-import { useLocalStorage } from "../../../shared/lib/useLocalStorage";
-import { useNotificationStore } from "../../../shared/lib/notificationStore";
+import { useProductStore } from "./productStore";
 
-const initialProducts: ProductWithUI[] = [
-  // ... (기존 초기 데이터 유지) ...
-  { id: "p1", name: "상품1", price: 10000, stock: 20, discounts: [{ quantity: 10, rate: 0.1 }, { quantity: 20, rate: 0.2 }], description: "최고급 품질의 프리미엄 상품입니다." },
-  { id: "p2", name: "상품2", price: 20000, stock: 20, discounts: [{ quantity: 10, rate: 0.15 }], description: "다양한 기능을 갖춘 실용적인 상품입니다.", isRecommended: true },
-  { id: "p3", name: "상품3", price: 30000, stock: 20, discounts: [{ quantity: 10, rate: 0.2 }, { quantity: 30, rate: 0.25 }], description: "대용량과 고성능을 자랑하는 상품입니다." },
-];
-
-// ❌ 인자 제거: export const useProducts = (addNotification: ...) => {
+/**
+ * 상품 관련 상태와 액션을 제공하는 커스텀 훅
+ * (Zustand Store를 컴포넌트에서 쉽게 쓰도록 연결하는 Selector 역할)
+ */
 export const useProducts = () => {
-  const [products, setProducts] = useLocalStorage<ProductWithUI[]>("products", initialProducts);
+  // 스토어 전체를 반환하거나, 필요한 것만 골라서 반환
+  const productStore = useProductStore();
   
-  // ✅ Store에서 직접 액션 가져오기
-  const addNotification = useNotificationStore((state) => state.addNotification);
-
-  const addProduct = useCallback(
-    (newProduct: Omit<ProductWithUI, "id">) => {
-      const product: ProductWithUI = {
-        ...newProduct,
-        id: `p-${crypto.randomUUID()}`,
-      };
-      setProducts((prev) => [...prev, product]);
-      addNotification("상품이 추가되었습니다.", "success");
-    },
-    [addNotification, setProducts]
-  );
-
-  const updateProduct = useCallback(
-    (productId: string, updates: Partial<ProductWithUI>) => {
-      setProducts((prev) =>
-        prev.map((product) =>
-          product.id === productId ? { ...product, ...updates } : product
-        )
-      );
-      addNotification("상품이 수정되었습니다.", "success");
-    },
-    [addNotification, setProducts]
-  );
-
-  const deleteProduct = useCallback(
-    (productId: string) => {
-      setProducts((prev) => prev.filter((p) => p.id !== productId));
-      addNotification("상품이 삭제되었습니다.", "success");
-    },
-    [addNotification, setProducts]
-  );
-
-  return { products, addProduct, updateProduct, deleteProduct };
+  return {
+    products: productStore.products,
+    addProduct: productStore.addProduct,
+    updateProduct: productStore.updateProduct,
+    deleteProduct: productStore.deleteProduct,
+  };
 };

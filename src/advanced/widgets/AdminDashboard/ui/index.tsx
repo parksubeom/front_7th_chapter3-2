@@ -1,96 +1,66 @@
 import { useState } from "react";
 
-// Shared
+// Shared Store & Lib
 import { formatCurrency } from "../../../shared/lib/format";
 
 // Entities (Model)
 import { ProductWithUI } from "../../../entities/product/model/types";
 import { Coupon } from "../../../entities/coupon/model/types";
 
-// Features (UI)
+// Features (Hooks - Selectors)
+// ✅ [핵심] 부모가 안 주니까, 내가 직접 훅을 불러서 씁니다.
+import { useProducts } from "../../../features/product/model/useProducts";
+import { useCoupons } from "../../../features/coupon/model/useCoupons";
+
+// Features (UI Forms)
 import { ProductManagementForm } from "../../../features/product/model/ui/ProductManagementForm";
 import { CouponManagementForm } from "../../../features/coupon/ui/CouponManagementForm";
 
-interface Props {
-  products: ProductWithUI[];
-  coupons: Coupon[];
-  onAddProduct: (product: Omit<ProductWithUI, "id">) => void;
-  onUpdateProduct: (id: string, product: Partial<ProductWithUI>) => void;
-  onDeleteProduct: (id: string) => void;
-  onAddCoupon: (coupon: Coupon) => void;
-  onDeleteCoupon: (id: string) => void;
-  onNotification: (message: string, type?: "error" | "success" | "warning") => void;
-}
 
-/**
- * 관리자 대시보드 위젯
- * 상품 및 쿠폰 관리 기능을 제공하며, 하위 폼 컴포넌트의 표시 여부(Visibility)를 관리합니다.
- */
-export const AdminDashboard = ({
-  products,
-  coupons,
-  onAddProduct,
-  onUpdateProduct,
-  onDeleteProduct,
-  onAddCoupon,
-  onDeleteCoupon,
-  onNotification,
-}: Props) => {
+export const AdminDashboard = () => {
+  // --------------------------------------------------------------------------
+  // 1. Global State Connection (Hooks)
+  // --------------------------------------------------------------------------
+  const { products, addProduct, updateProduct, deleteProduct } = useProducts();
+  const { coupons, addCoupon, deleteCoupon } = useCoupons();
+
+  // --------------------------------------------------------------------------
+  // 2. Local UI State
+  // --------------------------------------------------------------------------
   const [activeTab, setActiveTab] = useState<"products" | "coupons">("products");
-
-  // --------------------------------------------------------------------------
-  // Local State (Visibility & Editing Target)
-  // --------------------------------------------------------------------------
   
-  // 상품 관리: 폼 표시 여부 및 수정할 상품 데이터
+  // 상품 폼 상태
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductWithUI | null>(null);
 
-  // 쿠폰 관리: 폼 표시 여부
+  // 쿠폰 폼 상태
   const [showCouponForm, setShowCouponForm] = useState(false);
 
   // --------------------------------------------------------------------------
-  // Event Handlers
+  // 3. Handlers
   // --------------------------------------------------------------------------
-
-  /**
-   * 상품 추가/수정 완료 핸들러
-   * ProductManagementForm에서 전달받은 데이터를 기반으로
-   * 신규 추가(onAddProduct) 또는 수정(onUpdateProduct) 액션을 호출합니다.
-   */
-  const handleProductSubmit = (productData: ProductWithUI) => {
+  const handleProductSubmit = (productData: Omit<ProductWithUI, "id">) => {
     if (editingProduct) {
-      onUpdateProduct(editingProduct.id, productData);
+      updateProduct(editingProduct.id, productData);
     } else {
-      // 신규 생성 시 id는 제외하고 전달 (서버/훅에서 생성)
-      const { id, ...newProduct } = productData;
-      onAddProduct(newProduct);
+      addProduct(productData); 
     }
-    // 폼 닫기 및 상태 초기화
     setEditingProduct(null);
     setShowProductForm(false);
   };
 
-  /**
-   * 상품 수정 버튼 클릭 핸들러
-   * 수정할 상품 데이터를 상태에 설정하고 폼을 엽니다.
-   */
   const handleEditClick = (product: ProductWithUI) => {
     setEditingProduct(product);
     setShowProductForm(true);
   };
 
-  /**
-   * 쿠폰 추가 완료 핸들러
-   * CouponManagementForm에서 전달받은 데이터를 기반으로 추가 액션을 호출합니다.
-   */
   const handleCouponSubmit = (newCoupon: Coupon) => {
-    onAddCoupon(newCoupon);
+    addCoupon(newCoupon);
     setShowCouponForm(false);
   };
 
   // --------------------------------------------------------------------------
-  // Render
+  // 4. Render
   // --------------------------------------------------------------------------
   return (
     <div className="max-w-6xl mx-auto">
@@ -145,21 +115,11 @@ export const AdminDashboard = ({
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    상품명
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    가격
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    재고
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    설명
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    작업
-                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">가격</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">재고</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">설명</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">작업</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -196,7 +156,7 @@ export const AdminDashboard = ({
                         수정
                       </button>
                       <button
-                        onClick={() => onDeleteProduct(product.id)}
+                        onClick={() => deleteProduct(product.id)}
                         className="text-red-600 hover:text-red-900"
                       >
                         삭제
@@ -208,7 +168,6 @@ export const AdminDashboard = ({
             </table>
           </div>
 
-          {/* 상품 폼 컴포넌트 */}
           {showProductForm && (
             <ProductManagementForm
               initialData={editingProduct}
@@ -217,7 +176,6 @@ export const AdminDashboard = ({
                 setShowProductForm(false);
                 setEditingProduct(null);
               }}
-              onNotification={onNotification}
             />
           )}
         </section>
@@ -235,12 +193,8 @@ export const AdminDashboard = ({
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">
-                        {coupon.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 mt-1 font-mono">
-                        {coupon.code}
-                      </p>
+                      <h3 className="font-semibold text-gray-900">{coupon.name}</h3>
+                      <p className="text-sm text-gray-600 mt-1 font-mono">{coupon.code}</p>
                       <div className="mt-2">
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white text-indigo-700">
                           {coupon.discountType === "amount"
@@ -250,7 +204,7 @@ export const AdminDashboard = ({
                       </div>
                     </div>
                     <button
-                      onClick={() => onDeleteCoupon(coupon.code)}
+                      onClick={() => deleteCoupon(coupon.code)}
                       className="text-gray-400 hover:text-red-600 transition-colors"
                     >
                       <svg
@@ -294,12 +248,10 @@ export const AdminDashboard = ({
               </div>
             </div>
 
-            {/* 쿠폰 폼 컴포넌트 */}
             {showCouponForm && (
               <CouponManagementForm
                 onAddCoupon={handleCouponSubmit}
                 onCancel={() => setShowCouponForm(false)}
-                onNotification={onNotification}
               />
             )}
           </div>

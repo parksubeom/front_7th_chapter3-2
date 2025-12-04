@@ -10,14 +10,14 @@ export const useShop = () => {
   // 2. 도메인 훅 연결 (의존성 주입 해결)
   const productLogic = useProducts();
   const couponLogic = useCoupons();
-  const cartLogic = useCart(productLogic.products);
+  const cartLogic = useCart();
 
   return {
     addNotification,
     notifications,
     removeNotification,
-    productLogic, // { products, addProduct, ... }
-    couponLogic,  // { coupons, addCoupon, ... }
-    cartLogic,    // { cart, addToCart, ... }
+    productLogic, 
+    couponLogic,  
+    cartLogic,   
   };
 };

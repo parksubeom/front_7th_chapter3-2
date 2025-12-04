@@ -1,20 +1,27 @@
-import { useCartStore } from "./cartStore"; // ✅ 스토어 임포트
-import { ProductWithUI } from "../../../entities/product/model/types";
+// Shared (Store)
+import { useCartStore } from "./cartStore";
+import { useProductStore } from "../../product/model/productStore";
 
-export const useCart = (products: ProductWithUI[]) => {
+/**
+ * 장바구니 관련 상태와 액션을 관리하는 커스텀 훅
+ * 내부적으로 ProductStore를 구독하여 재고 확인에 필요한 데이터를 자동으로 확보합니다.
+ */
+export const useCart = () => {
   const cartStore = useCartStore();
+  const products = useProductStore((state) => state.products);
 
   return {
     cart: cartStore.cart,
     selectedCoupon: cartStore.selectedCoupon,
-    // Actions
+    
+    // 단순 전달 액션
     addToCart: cartStore.addToCart,
     removeFromCart: cartStore.removeFromCart,
     applyCoupon: cartStore.applyCoupon,
     setSelectedCoupon: cartStore.setSelectedCoupon,
     completeOrder: cartStore.completeOrder,
     
-    // updateQuantity는 products 인자가 필요하므로 래핑
+    // 복합 액션 (Dependency Injection)
     updateQuantity: (productId: string, newQuantity: number) => 
       cartStore.updateQuantity(productId, newQuantity, products)
   };
